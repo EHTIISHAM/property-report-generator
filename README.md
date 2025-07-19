@@ -5,9 +5,9 @@
 </p>
 
 <p align="center">
-  <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/YOUR_USERNAME/property-report-app?style=flat-square">
-  <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/YOUR_USERNAME/property-report-app?style=flat-square">
-  <img alt="License" src="https://img.shields.io/github/license/YOUR_USERNAME/property-report-app?style=flat-square">
+  <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/EHTIISHAM/property-report-app?style=flat-square">
+  <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/EHTIISHAM/property-report-app?style=flat-square">
+  <img alt="License" src="https://img.shields.io/github/license/EHTIISHAM/property-report-app?style=flat-square">
 </p>
 
 ---
@@ -25,21 +25,21 @@
 ## 🖼️ Demo
 
 <p align="center">
-  <img src="images/screenshot1.png" width="700" alt="Property Search UI" />
+  <img src="images/Screenshot1.PNG" width="700" alt="Property Search UI" />
   <br/>
-  <em>🏘️ Property Search Modal</em>
+  <em>🏘️ Property Info Modal</em>
 </p>
 
 <p align="center">
-  <img src="images/screenshot2.png" width="700" alt="Editable Form UI" />
+  <img src="images/Screenshot2.PNG" width="700" alt="Editable Form UI" />
   <br/>
   <em>📝 Editable Property Data</em>
 </p>
 
 <p align="center">
-  <img src="images/screenshot3.png" width="700" alt="Generated PDF Preview" />
-  <br/>
-  <em>📄 PDF Report Preview</em>
+  <a href="https://github.com/EHTIISHAM/property-report-generator/tree/main/samples">
+    <em>📄 PDF Samples</em>
+  </a>
 </p>
 
 ---
