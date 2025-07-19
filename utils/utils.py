@@ -12,7 +12,6 @@ from openai import OpenAI
 import re
 import os
 import cv2
-#ZILLOW API KEYS
 API_KEY = os.getenv("ZILLOW_KEY")
 API_KEY_OPENAI = os.getenv("OPENAPI_KEY")
 client = OpenAI(api_key=API_KEY_OPENAI)
