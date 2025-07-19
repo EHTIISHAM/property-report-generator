@@ -10,9 +10,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from openai import OpenAI
 import re
+import os
 import cv2
-API_KEY = "d5bb61538fmsh8297569feccdfccp11e19ejsn8e6735f79eed"
-API_KEY_OPENAI = "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"
+#ZILLOW API KEYS
+API_KEY = os.getenv("ZILLOW_KEY")
+API_KEY_OPENAI = os.getenv("OPENAPI_KEY")
 client = OpenAI(api_key=API_KEY_OPENAI)
 
 placeholder_url_img = "https://www.zillowstatic.com/static/images/nophoto_p_c.png"
