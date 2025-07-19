@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+reports/
+.env
+node_modules/

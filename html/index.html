@@ -1,0 +1,496 @@
+<div id="property-lookup-widget">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        .property-input{
+            border: 2px solid #98B8FF !important;
+        }
+        .property-description {
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .helper-tooltip-button {
+            display: inline-block;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 2px 6px;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-left: 8px;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+        }
+    </style>
+    
+    <div class="bg-white shadow-md p-4 border space-x-4 rounded-lg shadow-md flex items-center w-full max-w-4xl">
+        <input id="addressInput" type="text" placeholder="Type address or zip code" 
+            class="flex-grow max-w-2xl p-2 property-input md:w-[80%] rounded-md focus:outline-none">
+        <button id="getPropertyBtn" class="bg-blue-500 md:w-[20%] text-white px-4 py-2.5 rounded-md">Get Property</button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Property Details Modal -->
+    <div id="propertyModal" class="fixed z-10 inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white md:p-5 p-4 rounded-lg max-w-[1004px] w-[95%] md:w-full transform transition-all scale-95 opacity-0 modal-content" id="propertyModalContent">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h2 class="text-lg font-semibold">Property Details</h2>
+                <button id="closeModal" class="text-3xl text-gray-500">&times;</button>
+            </div>
+            <div class="flex border-2 rounded-md pb-4 border-[#E2E2E4] flex-col md:flex-row md:p-4 mt-4 p-4">
+                <div class="md:w-[400px] w-full max-h-[353px] flex justify-center">
+                    <img id="propertyImage" class="w-[200px] h-[200px] md:w-[400px] md:h-[353px] rounded-lg object-cover" src="" alt="Property Image" onerror="this.onerror=null; this.src='https://saveonyourhome.com/wp-content/uploads/2025/02/placeholder-home.jpg';">
+                </div>
+                <div class="md:ml-4 flex flex-col justify-between md:w-2/3 w-full">
+                    <div class="space-y-2 md:space-y-4">
+                        <h3 id="propertyAddress" class="md:text-[22px] text-lg font-semibold mt-2 md:mt-0"></h3>
+                        <div class="property-description">
+                            <p id="propertyDescription" class="text-sm text-[#646464]"></p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                            <ul class="space-y-2 text-sm">
+                                <li class="text-sm justify-between w-full flex items-center text-[#646464]">
+                                    <strong class="flex text-sm font-medium text-black">
+                                        <img src="https://saveonyourhome.com/wp-content/uploads/2025/02/value.svg" class="w-5 h-5 mr-2" alt=""> 
+                                        Assessed Value:
+                                    </strong>
+                                    <span>$<span class="text-sm text-[#646464]" id="assessedValue"></span></span>
+                                </li>
+                                <li class="text-sm justify-between w-full flex items-center text-[#646464]">
+                                    <strong class="flex text-sm font-medium text-black">
+                                        <img src="https://saveonyourhome.com/wp-content/uploads/2025/02/value.svg" class="w-5 h-5 mr-2" alt=""> 
+                                        Current Listing Price:
+                                    </strong>
+                                    <span>$<span class="text-sm text-[#646464]" id="zestimate"></span></span>
+                                </li>
+                                <li class="text-sm justify-between w-full flex items-center text-[#646464]">
+                                    <strong class="flex text-sm font-medium text-black">
+                                        <img src="https://saveonyourhome.com/wp-content/uploads/2025/02/size-width.svg" class="w-4 h-4 mr-2" alt=""> 
+                                        Property Size:
+                                    </strong>
+                                    <span><span class="text-sm text-[#646464]" id="propertySize"></span> sq ft</span>
+                                </li>
+                            </ul>
+                            <ul class="space-y-2 text-sm">
+                                <li class="text-sm justify-between w-full flex items-center text-[#646464]">
+                                    <strong class="flex text-sm font-medium text-black">
+                                        <img src="https://saveonyourhome.com/wp-content/uploads/2025/02/time.svg" class="w-4 h-4 mr-2" alt=""> 
+                                        Days on Market:
+                                    </strong>
+                                    <span class="text-sm text-[#646464]" id="daysOnMarket"></span>
+                                </li>
+                                <li class="text-sm justify-between w-full flex items-center text-[#646464]">
+                                    <strong class="flex text-sm font-medium text-black">
+                                        <img src="https://saveonyourhome.com/wp-content/uploads/2025/02/draw.svg" class="w-4 h-4 mr-2" alt=""> 
+                                        Square Footage:
+                                    </strong>
+                                    <span><span class="text-sm text-[#646464]" id="squareFootage"></span> sq ft</span>
+                                </li>
+                                <li class="text-sm justify-between w-full flex items-center text-[#646464]">
+                                    <strong class="flex text-sm font-medium text-black">
+                                        <img src="bed.svg" class="w-4 h-4 mr-2" alt=""> 
+                                        Bedrooms:
+                                    </strong>
+                                    <span class="text-sm text-[#646464]" id="totalBedrooms"></span>
+                                </li>
+                                <li class="text-sm justify-between w-full flex items-center text-[#646464]">
+                                    <strong class="flex text-sm font-medium text-black">
+                                        <img src="bath.svg" class="w-4 h-4 mr-2" alt=""> 
+                                        Bathrooms:
+                                    </strong>
+                                    <span class="text-sm text-[#646464]" id="totalBathrooms"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <button id="modifyBtn" class="bg-[#F2F2F2] text-sm font-semibold px-4 md:px-8 py-[7px] hover:bg-gray-200 rounded-md">Modify</button>
+                        <a id="zillowLink" href="#" target="_blank" class="bg-[#F2F2F2] text-center text-sm font-semibold hover:bg-gray-200 px-4 md:px-8 py-[7px] rounded-md">View Zillow Listing</a>
+                        <button id="generateReportBtn" class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 md:px-8 py-[7px] rounded-md">Generate Report →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modify Property Modal -->
+    <div id="modifyModal" class="fixed z-20 inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-4 md:p-8 flex flex-col justify-between rounded-lg max-w-[962px] w-[95%] md:w-full transform transition-all scale-95 opacity-0 modal-content" id="modifyModalContent">
+            <div class="space-y-6">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h2 class="text-lg font-semibold">Edit Property Details
+                        <button class="helper-tooltip-button" onclick="alert('please fill all the details')">?</button>
+                    </h2>
+                    <button id="closeModifyModal" class="text-3xl text-gray-500">&times;</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 mt-4">
+                    <div class="flex flex-col space-y-2">
+                        <label for="editAssessedValue" class="text-sm">Assessed Value:</label>
+                        <input id="editAssessedValue" type="number" class="border-2 rounded-md border-[#98B8FF] p-2" placeholder="Assessed Value">
+                    </div>
+
+                    <div class="flex flex-col space-y-2">
+                        <label for="editZestimate" class="text-sm">Current Listing Price:</label>
+                        <input id="editZestimate" type="number" class="border-2 rounded-md border-[#98B8FF] p-2" placeholder="Current Listing Price">
+                    </div>
+
+                    <div class="flex flex-col space-y-2">
+                        <label for="editPropertySize" class="text-sm">Property Size (sq ft):</label>
+                        <input id="editPropertySize" type="number" class="border-2 rounded-md border-[#98B8FF] p-2" placeholder="Property Size">
+                    </div>
+
+                    <div class="flex flex-col space-y-2">
+                        <label for="editSquareFootage" class="text-sm">Square Footage (sq ft):</label>
+                        <input id="editSquareFootage" type="number" class="border-2 rounded-md border-[#98B8FF] p-2" placeholder="Square Footage">
+                    </div>
+
+                    <div class="flex flex-col space-y-2">
+                        <label for="editTotalBedrooms" class="text-sm">Total Bedrooms:</label>
+                        <input id="editTotalBedrooms" type="number" class="border-2 rounded-md border-[#98B8FF] p-2" placeholder="Total Bedrooms">
+                    </div>
+
+                    <div class="flex flex-col space-y-2">
+                        <label for="editTotalBathrooms" class="text-sm">Total Bathrooms:</label>
+                        <input id="editTotalBathrooms" type="number" class="border-2 rounded-md border-[#98B8FF] p-2" placeholder="Total Bathrooms">
+                    </div>
+
+                </div>
+            </div>
+            <div class="flex items-center justify-center mt-6">
+                <button id="saveBtn" class="bg-blue-500 w-full md:w-[314px] text-white px-4 py-3.5 font-semibold text-sm rounded-md">Save</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Report Modal -->
+    <div id="reportModal" class="fixed z-30 inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md text-center shadow-lg">
+            <!-- Close Button -->
+            <button id="closeReportModal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+                ✕
+            </button>
+    
+            <!-- Success Icon -->
+            <div class="flex justify-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" stroke-width="2" 
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" 
+                              d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+    
+            <!-- Modal Content -->
+            <h2 class="text-lg font-semibold mt-4">Your report has been generated</h2>
+            <p class="text-gray-600 mt-2">Almost there! Your report is fully ready to download</p>
+    
+            <!-- Download Button -->
+            <a id="downloadReportBtn" href="#" target="_blank" 
+               class="block mt-4 bg-blue-600 text-white font-semibold py-2 rounded-lg w-full hover:bg-blue-700">
+                DOWNLOAD REPORT
+            </a>
+        </div>
+    </div>
+    
+    
+    <script>
+        (function() {
+    let propertyData = {};
+    
+    // DOM Elements
+    const getPropertyBtn = document.getElementById("getPropertyBtn");
+    const addressInput = document.getElementById("addressInput");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+    const propertyModal = document.getElementById("propertyModal");
+    const propertyModalContent = document.getElementById("propertyModalContent");
+    const closeModalBtn = document.getElementById("closeModal");
+    const modifyBtn = document.getElementById("modifyBtn");
+    const modifyModal = document.getElementById("modifyModal");
+    const modifyModalContent = document.getElementById("modifyModalContent");
+    const closeModifyModalBtn = document.getElementById("closeModifyModal");
+    const saveBtn = document.getElementById("saveBtn");
+    const generateReportBtn = document.getElementById("generateReportBtn");
+    const reportModal = document.getElementById("reportModal");
+    const closeReportModalBtn = document.getElementById("closeReportModal");
+    const downloadReportBtn = document.getElementById("downloadReportBtn");
+
+    // Event Listeners
+    getPropertyBtn.addEventListener("click", fetchPropertyData);
+    closeModalBtn.addEventListener("click", closePropertyModal);
+    modifyBtn.addEventListener("click", openModifyModal);
+    closeModifyModalBtn.addEventListener("click", closeModifyModal);
+    saveBtn.addEventListener("click", saveModifiedData);
+    generateReportBtn.addEventListener("click", showReportTypeSelection);
+    closeReportModalBtn.addEventListener("click", closeReportModal);
+    
+    // Handle Enter key press in address input
+    addressInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            fetchPropertyData();
+        }
+    });
+
+    function fetchPropertyData() {
+        const address = addressInput.value.trim();
+        if (!address) {
+            alert("Please enter an address.");
+            return;
+        }
+        
+        // Remove ", USA" from the address if present
+        let formattedAddress = address.replace(/, USA$/, "");
+        
+        loadingSpinner.classList.remove("hidden");
+        
+        fetch(`http://127.0.0.1:8000/get_property_info?property_address=${encodeURIComponent(formattedAddress)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                propertyData = data;
+                
+                // Set default values for missing data
+                propertyData.totalBedrooms = propertyData.totalBedrooms || 0;
+                propertyData.totalBathrooms = propertyData.totalBathrooms || 0;
+                
+                updatePropertyModal();
+                openPropertyModal();
+            })
+            .catch(error => {
+                console.error('Error fetching property data:', error);
+                alert("There is no listing data available for this address. Please try again.");
+            })
+            .finally(() => {
+                loadingSpinner.classList.add("hidden");
+            });
+    }
+
+    function updatePropertyModal() {
+        // Update all property details in the modal
+        document.getElementById("propertyAddress").textContent = propertyData.address || "N/A";
+        document.getElementById("propertyDescription").textContent = propertyData.specifications || "N/A";
+        document.getElementById("zestimate").textContent = formatNumber(propertyData.zestimate) || "N/A";
+        document.getElementById("assessedValue").textContent = formatNumber(propertyData.Assessed_value) || "N/A";
+        document.getElementById("propertySize").textContent = formatNumber(propertyData.Porperty_size) || "N/A";
+        document.getElementById("daysOnMarket").textContent = propertyData.days_on_market || "N/A";
+        document.getElementById("squareFootage").textContent = formatNumber(propertyData.square_footage) || "N/A";
+        document.getElementById("totalBedrooms").textContent = propertyData.totalBedrooms || "N/A";
+        document.getElementById("totalBathrooms").textContent = propertyData.totalBathrooms || "N/A";
+        
+        // Set image with fallback
+        const propertyImage = document.getElementById("propertyImage");
+        propertyImage.src = propertyData.main_img_url || "";
+        
+        // Set Zillow link
+        document.getElementById("zillowLink").href = propertyData.url || "#";
+    }
+    
+    function formatNumber(num) {
+        if (!num) return "";
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function openPropertyModal() {
+        propertyModal.classList.remove("hidden");
+        setTimeout(() => {
+            propertyModalContent.classList.remove("scale-95", "opacity-0");
+        }, 10);
+    }
+
+    function closePropertyModal() {
+        propertyModalContent.classList.add("scale-95", "opacity-0");
+        setTimeout(() => {
+            propertyModal.classList.add("hidden");
+        }, 300);
+    }
+
+    function openModifyModal() {
+        // Populate modify modal with current values
+        document.getElementById("editAssessedValue").value = propertyData.Assessed_value || "";
+        document.getElementById("editZestimate").value = propertyData.zestimate || "";
+        document.getElementById("editPropertySize").value = propertyData.Porperty_size || "";
+        document.getElementById("editSquareFootage").value = propertyData.square_footage || "";
+        document.getElementById("editTotalBedrooms").value = propertyData.totalBedrooms || "";
+        document.getElementById("editTotalBathrooms").value = propertyData.totalBathrooms || "";
+        
+        modifyModal.classList.remove("hidden");
+        setTimeout(() => {
+            modifyModalContent.classList.remove("scale-95", "opacity-0");
+        }, 10);
+    }
+
+    function closeModifyModal() {
+        modifyModalContent.classList.add("scale-95", "opacity-0");
+        setTimeout(() => {
+            modifyModal.classList.add("hidden");
+        }, 300);
+    }
+
+    function saveModifiedData() {
+        // Update propertyData with edited values
+        propertyData.Assessed_value = document.getElementById("editAssessedValue").value;
+        propertyData.zestimate = document.getElementById("editZestimate").value;
+        propertyData.Porperty_size = document.getElementById("editPropertySize").value;
+        propertyData.square_footage = document.getElementById("editSquareFootage").value;
+        propertyData.totalBedrooms = document.getElementById("editTotalBedrooms").value;
+        propertyData.totalBathrooms = document.getElementById("editTotalBathrooms").value;
+
+        // Update main property modal with new data
+        updatePropertyModal();
+        
+        // Close modify modal
+        closeModifyModal();
+    }
+
+    // Create and show report type selection modal
+    function showReportTypeSelection() {
+        // Create report type selection modal if it doesn't exist
+        if (!document.getElementById("reportTypeModal")) {
+            const reportTypeModal = document.createElement("div");
+            reportTypeModal.id = "reportTypeModal";
+            reportTypeModal.className = "fixed z-30 inset-0 bg-black bg-opacity-50 flex justify-center items-center";
+            reportTypeModal.innerHTML = `
+                <div class="bg-white rounded-2xl p-6 w-full max-w-md text-center shadow-lg">
+                    <h2 class="text-lg font-semibold mb-4">Select Report Type</h2>
+                    <p class="text-gray-600 mb-4">Please choose the type of report you want to generate:</p>
+                    <div class="flex flex-col gap-3">
+                        <button id="sellerReportBtn" class="bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700">
+                            Seller Report
+                        </button>
+                        <button id="buyerReportBtn" class="bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700">
+                            Buyer Report
+                        </button>
+                        <button id="cancelReportBtn" class="bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg hover:bg-gray-400">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(reportTypeModal);
+
+            // Add event listeners for report type buttons
+            document.getElementById("sellerReportBtn").addEventListener("click", function() {
+                generateReport("seller");
+                reportTypeModal.style.display = "none";
+            });
+            document.getElementById("buyerReportBtn").addEventListener("click", function() {
+                generateReport("buyer");
+                reportTypeModal.style.display = "none";
+            });
+            document.getElementById("cancelReportBtn").addEventListener("click", function() {
+                reportTypeModal.style.display = "none";
+            });
+        } else {
+            document.getElementById("reportTypeModal").style.display = "flex";
+        }
+    }
+
+    function generateReport(reportType = "seller") {
+        // Define required numeric fields from propertyData
+        const fieldsToCheck = {
+            "Assessed Value": propertyData.Assessed_value,
+            "Zestimate": propertyData.zestimate,
+            "Property Size": propertyData.Porperty_size,
+            "Square Footage": propertyData.square_footage,
+            "Total Bedrooms": propertyData.totalBedrooms,
+            "Total Bathrooms": propertyData.totalBathrooms,
+        };
+
+        // Loop through the fields and check if any are missing or invalid
+        for (const [name, value] of Object.entries(fieldsToCheck)) {
+            if (value === null || value === undefined || value === "" || isNaN(Number(value))) {
+                alert(`Missing value for "${name}". Please enter it in modification.`);
+                openModifyModal();  // Opens the modal so user can edit missing data
+                return;  // Stop execution; do not generate report
+            }
+        }
+        const autoCorrectFields = [
+            'Assessed_value', 'zestimate', 'Porperty_size', 'square_footage', 'totalBedrooms', 'totalBathrooms', 'totalMarketValue'
+        ];
+
+        autoCorrectFields.forEach(field => {
+            if (!propertyData[field] || isNaN(Number(propertyData[field])) || Number(propertyData[field]) === 0) {
+                propertyData[field] = 1;  // Auto-correct to 1 instead of asking the user
+            }
+        });
+        // If all fields are valid, continue with generating the report
+        loadingSpinner.classList.remove("hidden");
+
+        const params = new URLSearchParams({
+            report_type: reportType,
+            address: propertyData.address || "",
+            days_on_market: propertyData.days_on_market || 1,
+            main_img_url: propertyData.main_img_url || "",
+            url: propertyData.url || "",
+            zestimate: propertyData.zestimate || 0,
+            assessed_value: propertyData.Assessed_value || 0,
+            square_footage: propertyData.square_footage || 0,
+            totalBathrooms: propertyData.totalBathrooms || 0,
+            totalBedrooms: propertyData.totalBedrooms || 0,
+            property_size: propertyData.Porperty_size || 0,
+            specifications: propertyData.specifications || "helo",
+            longitude: propertyData.longitude || 0,
+            latitude: propertyData.latitude || 0
+        });
+        
+        fetch(`http://127.0.0.1:8000/generate-report-new/?${params.toString()}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.download_link) {
+                    downloadReportBtn.href = data.download_link;
+                    openReportModal();
+                } else {
+                    alert("Error generating report. Please try again.");
+                }
+            })
+            .catch(error => {
+                console.error('Error generating report:', error);
+                alert("Failed to generate report. Please try again.");
+            })
+            .finally(() => {
+                loadingSpinner.classList.add("hidden");
+            });
+    }
+
+
+    function openReportModal() {
+        reportModal.classList.remove("hidden");
+    }
+
+    function closeReportModal() {
+        reportModal.classList.add("hidden");
+    }
+})();
+    </script>
